@@ -7,14 +7,14 @@ namespace DynXml
     {
         static void Main()
         {
-            //var doc = XDocument.Load("./examples/3-target-groups.xml");
-            var doc = XDocument.Load("./examples/china.xml");
+            var doc = XDocument.Load("./examples/3-target-groups.xml");
+            //var doc = XDocument.Load("./examples/china.xml");
             //var doc = XDocument.Load("./examples/questions.xml");
             var project = Dynamic.Convert.FromXml(doc.Root);
 
             //PrintQuestions(project);
-            PrintChina(project);
-            //Print3TargetGroups(project);
+            //PrintChina(project);
+            Print3TargetGroups(project);
             Console.ReadKey();
         }
 
@@ -44,7 +44,7 @@ namespace DynXml
                     Console.WriteLine("\tquestion name: {0}", question.question_name);
                     foreach (var answer in question.answer)
                     {
-                        Console.WriteLine("\t - answer: {0}", answer);
+                        Console.WriteLine("\t - answer: {0}", answer.answer_label);
                     }
                 }
         }

@@ -25,7 +25,7 @@ namespace Dynamic
                         return (item.HasAttributes) ? GetAttributes(item, new ExpandoObject()) : item.Value.Trim();
                     }));
                 else
-                    values.Add((element.HasElements) ? FromXml(element) : element.Value.Trim());
+                    values.Add((element.HasElements || element.HasAttributes) ? FromXml(element) : element.Value.Trim());
 
                 GetAttributes(element, result);
 

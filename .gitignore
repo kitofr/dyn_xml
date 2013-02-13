@@ -4,3 +4,4 @@ examples/
 *.suo
 *.user
 *.swp
+_ReSharper.DynXml/

@@ -36,6 +36,11 @@ namespace DynXml
             }
         }
 
+        private static void PrintFeasibilityResponseBatch(dynamic batch)
+        {
+            
+        }
+
         private static void PrintQuestions(dynamic project)
         {
             foreach (var target_group in project.target_groups)

@@ -136,7 +136,18 @@ namespace DynamicSpec
         [Context("Snake casing")]
         public class SnakeCasing
         {
-            
+            public void tag_names_should_be_snake_cased()
+            {
+                var foo_snake = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
+<foo-snake>
+    <bar-case>
+        <baz-thing>Yes</baz-thing>
+    </bar-case>
+</foo-snake>");
+
+                string baz_thing = foo_snake.bar_case.baz_thing;
+                Verify.That(() => baz_thing == "Yes");
+            }
         }
 
         private static dynamic GetDynamic(string input)

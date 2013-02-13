@@ -18,7 +18,7 @@ namespace Dynamic
 
             foreach (var attribute in root.Attributes())
             {
-                var casedName = '_' + snakeCasedName(attribute.Name.LocalName);
+                var casedName = '_' + snakeCase(attribute.Name.LocalName);
                 r[casedName] = attribute.Value;
             }
             return r;
@@ -56,7 +56,8 @@ namespace Dynamic
             else
                 foreach (var element in seq)
                 {
-                    r[element.Name.LocalName] = Expand(element);
+                    var key = snakeCase(element.Name.LocalName);
+                    r[key] = Expand(element);
                 }
 
             return r;
@@ -64,7 +65,7 @@ namespace Dynamic
 
         private static string CreateSequenceName(IEnumerable<XElement> seq)
         {
-            return seq.First().Name.LocalName;
+            return snakeCase(seq.First().Name.LocalName);
         }
 
         private static bool HasMoreThanOneChild(IEnumerable<XElement> seq)
@@ -92,7 +93,7 @@ namespace Dynamic
             return !root.HasAttributes ? root.Value : CreateAttribute(root, new ExpandoObject());
         }
 
-        private static string snakeCasedName(string element)
+        private static string snakeCase(string element)
         {
             return element.Replace('-', '_');
         }

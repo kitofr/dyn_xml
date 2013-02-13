@@ -9,20 +9,33 @@ namespace Dynamic
     {
         public static dynamic FromXml(XElement root)
         {
-            return Expand(root);
+            return AttachAttributes(root, Expand(root));
+        }
+
+        private static dynamic CreateAttribute(XElement root, dynamic result)
+        {
+            var r = result as IDictionary<string, dynamic>;
+
+            foreach (var attribute in root.Attributes())
+            {
+                var casedName = '_' + snakeCasedName(attribute.Name.LocalName);
+                r[casedName] = attribute.Value;
+            }
+            return r;
         }
 
         private static dynamic Expand(XElement root)
         {
-            return root.Elements().Any() ? Expand(root.Elements()) : root.Value;
+            return root.Elements().Any() ? 
+                Expand(root.Elements()) : 
+                GetAttributes(root);
         }
 
         private static dynamic Expand(IEnumerable<XElement> seq)
         {
             dynamic result = new ExpandoObject();
             var r = result as IDictionary<string, dynamic>;
-
-
+            
             if (HasMoreThanOneChild(seq) && AllChildrenHasSameName(seq))
             {
                 var key = CreateSequenceName(seq);
@@ -42,7 +55,9 @@ namespace Dynamic
             }
             else
                 foreach (var element in seq)
+                {
                     r[element.Name.LocalName] = Expand(element);
+                }
 
             return r;
         }
@@ -67,25 +82,14 @@ namespace Dynamic
             return seq.GroupBy(n => n.Name.LocalName).Count() == 1;
         }
 
-        private static dynamic GetAttributes(XElement root)
+        private static dynamic AttachAttributes(XElement root, dynamic result)
         {
-            var result = new Dictionary<string, dynamic>();
-            foreach (var attribute in root.Attributes())
-            {
-                var casedName = snakeCasedName(root.Name.LocalName) + '_' + snakeCasedName(attribute.Name.LocalName);
-                result[casedName] = attribute.Value;
-            }
-            return result;
+            return !root.HasAttributes ? result : CreateAttribute(root, result);
         }
 
-        private static dynamic GetAttributes(XElement root, dynamic result)
+        private static dynamic GetAttributes(XElement root)
         {
-            foreach (var attribute in root.Attributes())
-            {
-                var casedName = snakeCasedName(root.Name.LocalName) + '_' + snakeCasedName(attribute.Name.LocalName);
-                (result as IDictionary<string, dynamic>)[casedName] = attribute.Value;
-            }
-            return result;
+            return !root.HasAttributes ? root.Value : CreateAttribute(root, new ExpandoObject());
         }
 
         private static string snakeCasedName(string element)

@@ -101,23 +101,22 @@ namespace DynamicSpec
             {
                 var foo = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
 <foo id='foo' />");
-                string id = foo.foo_id;
+                string id = foo._id;
                 Verify.That(() => id == "foo");
             }
 
-            [Pending]
             public void top_node_as_container_with_attributes()
             {
                 var foo = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
 <foo id='foo'>
     <bar id='1'/>
 </foo>");
-                string id = foo.foo_id;
+                string id = foo._id;
                 Verify.That(() => id == "foo");
-                string barId = foo.bar.bar_id;
+                string barId = foo.bar._id;
                 Verify.That(() => barId == "1");
             }
-            [Pending]
+            
             public void tags_with_same_name_is_collected_in_list()
             {
                 var foo = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
@@ -129,22 +128,8 @@ namespace DynamicSpec
                 var bars = ((IList<dynamic>)foo.bar);
                 Verify.That(() => bars.Count == 2);
 
-                var ids = bars.Select(x => x.bar_id);
+                var ids = bars.Select(x => x._id);
                 Verify.That(() => string.Join(",", ids) == "1,2");
-            }
-            [Pending]
-            public void tags_with_same_name_can_have_value()
-            {
-                var foo = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
-<foo id='foo'>
-    <bar>Yes</bar>
-    <bar>No</bar>
-</foo>");
-                var bars = ((IList<dynamic>)foo.bar);
-                Verify.That(() => bars.Count == 2);
-
-                var values = bars.Select(x => x);
-                Verify.That(() => string.Join(",", values) == "Yes,No");
             }
         }
 

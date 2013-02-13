@@ -7,53 +7,64 @@ namespace Dynamic
 {
     public class Convert
     {
-        public static dynamic Expand(XElement root)
+        public static dynamic FromXml(XElement root)
+        {
+            return Expand(root);
+        }
+
+        private static dynamic Expand(XElement root)
         {
             return root.Elements().Any() ? Expand(root.Elements()) : root.Value;
         }
 
-        public static dynamic Expand(IEnumerable<XElement> seq)
+        private static dynamic Expand(IEnumerable<XElement> seq)
         {
             dynamic result = new ExpandoObject();
             var r = result as IDictionary<string, dynamic>;
 
-            foreach (var element in seq)
-                r[element.Name.LocalName] = Expand(element);
+
+            if (HasMoreThanOneChild(seq) && AllChildrenHasSameName(seq))
+            {
+                var key = CreateSequenceName(seq);
+                r[key] = seq.Select(element => Expand(element)).ToList();
+            }
+            else if (HasMoreThanOneChild(seq) && SomeChildrenHasSameName(seq))
+            {
+                var childrenWithSameName = seq.GroupBy(n => n.Name.LocalName)
+                    .Select(x => new { Name = x.Key, Values = x.ToList(), Count = x.Count() });
+
+                foreach (var child in childrenWithSameName)
+                {
+                    var list = child.Values;
+                    var key = CreateSequenceName(list);
+                    r[key] = (list.Count == 1) ? Expand(list.First()) : list.Select(x => Expand(x)).ToList();
+                }
+            }
+            else
+                foreach (var element in seq)
+                    r[element.Name.LocalName] = Expand(element);
 
             return r;
         }
 
-        private static void CreateTag(XElement element, dynamic parent)
+        private static string CreateSequenceName(IEnumerable<XElement> seq)
         {
-            var p = parent as IDictionary<string, dynamic>;
-            var key = element.Name.LocalName;
-            if(!p.ContainsKey(key))
-                p[key] = element.Value.Trim();
-            else
-            {
-                var seqName = key + "s";
-                var values = new List<dynamic>();
-                values.Add(p[key]);
-                values.Add(element.Value.Trim());
-                p[seqName] = values;
-            }
+            return seq.First().Name.LocalName;
         }
 
-        public static dynamic FromXml(XElement root)
+        private static bool HasMoreThanOneChild(IEnumerable<XElement> seq)
         {
-            //dynamic result = new ExpandoObject();
-            return Expand(root);
-            
+            return seq.Count() > 1;
         }
-
-        private static bool AllChildrenHasSameName(IEnumerable<XElement> elements)
+        private static bool SomeChildrenHasSameName(IEnumerable<XElement> seq)
         {
-            return elements.GroupBy(n => n.Name.LocalName).Count() == 1;
+            return seq.GroupBy(n => n.Name.LocalName)
+                        .Select(group => new { Name = group.Key, Count = group.Count()})
+                        .Any(x => x.Count > 1);
         }
-
-        private static bool AllChildrenHasSameName(XElement element)
+        private static bool AllChildrenHasSameName(IEnumerable<XElement> seq)
         {
-            return element.Elements().GroupBy(n => n.Name.LocalName).Count() == 1;
+            return seq.GroupBy(n => n.Name.LocalName).Count() == 1;
         }
 
         private static dynamic GetAttributes(XElement root)

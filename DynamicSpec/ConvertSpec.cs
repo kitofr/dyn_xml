@@ -60,6 +60,38 @@ namespace DynamicSpec
                 string baz = foo.bar.baz;
                 Verify.That(() => baz == "Yes");
             }
+
+            public void that_is_3_levels_deep_and_have_list_grouping()
+            {
+                var foo = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
+<foo>
+    <bar>
+        <baz>Yes</baz>
+    </bar>
+    <bar>
+        <baz>No</baz>
+    </bar>
+</foo>");
+                var bars = (IList<dynamic>)foo.bar;
+                Verify.That(() => bars.Count == 2);
+
+                var res = string.Join(",", bars.Select(x => x.baz));
+                Verify.That(() => res == "Yes,No");
+            }
+            public void with_two_elements_with_same_name_and_one_with_a_different()
+            {
+                var foo = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
+<foo>
+    <bar>1</bar>
+    <bar>2</bar>
+    <baz>No Wai!</baz>
+</foo>");
+                var bars = (IList<dynamic>)foo.bar;
+                Verify.That(() => bars.Count == 2);
+                Verify.That(() => string.Join(",", bars.Select(x => x)) == "1,2");
+                string baz = foo.baz;
+                Verify.That(() => baz == "No Wai!");
+            }
         }
 
         [Context("Attributes")]
@@ -114,6 +146,12 @@ namespace DynamicSpec
                 var values = bars.Select(x => x);
                 Verify.That(() => string.Join(",", values) == "Yes,No");
             }
+        }
+
+        [Context("Snake casing")]
+        public class SnakeCasing
+        {
+            
         }
 
         private static dynamic GetDynamic(string input)

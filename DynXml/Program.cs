@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 
 namespace DynXml
@@ -7,43 +8,155 @@ namespace DynXml
     {
         static void Main()
         {
-            //var doc = XDocument.Load("./examples/3-target-groups.xml");
-            //var doc = XDocument.Load("./examples/china.xml");
-            //var doc = XDocument.Load("./examples/questions.xml");
-            var doc = XDocument.Load("./examples/feasibility-response-batch.xml");
-            var batch = Dynamic.Convert.FromXml(doc.Root);
+            PrintQuestions(Dynamic.Convert.FromXml(XDocument.Load("./examples/questions.xml").Root));
 
-            //PrintQuestions(project);
-            //PrintChina(project);
-            //Print3TargetGroups(project);
-            PrintFeasibilityResponseBatch(batch);
+            Print3TargetGroups(Dynamic.Convert.FromXml(XDocument.Load("./examples/3-target-groups.xml").Root));
+
+            PrintChina(Dynamic.Convert.FromXml(XDocument.Load("./examples/china.xml").Root));
+
+            //PrintFeasibilityResponseBatch(Dynamic.Convert.FromXml(XDocument.Load("./examples/feasibility-response-batch.xml").Root));
+            
+            
             Console.ReadKey();
+        }
+
+        private static void PrintQuestions(dynamic project)
+        {
+            Console.WriteLine(" ------------- Print Questions ------------- ");
+            var targetGroup = project.target_groups.target_group;
+            var question = targetGroup.questions.question;
+
+            Console.WriteLine("question name: {0}", question._name);
+            foreach (var answer in question.answer)
+            {
+                Console.WriteLine("\t - answer: {0}", answer._label);
+            }
+
+        }
+
+        private static void Print3TargetGroups(dynamic project)
+        {
+            Console.WriteLine(" ------------- Print 3 Target Groups ------------- ");
+
+            Console.WriteLine("name: {0}", project._name);
+            Console.WriteLine("user: {0}", project.user._id);
+            Console.WriteLine("contact[email]: {0}", project.contact._email);
+            Console.WriteLine("contact[phone]: {0}", project.contact._phone);
+            Console.WriteLine("status: {0}", project.status.__value);
+            Console.WriteLine("completes[actual]: {0}", project.completes._actual);
+            Console.WriteLine("completes[wanted]: {0}", project.completes._wanted);
+            Console.WriteLine("price[price]: [min:{0},max:{1}]", project.price.price._min, project.price.price._max);
+            Console.WriteLine("price[discount]: [min:{0},max:{1}]", project.price.discount._min, project.price.discount._max);
+            Console.WriteLine("price[agreed]: [min:{0},max:{1}]", project.price.agreed._min, project.price.agreed._max);
+
+            Console.WriteLine("start date: {0}", project.start_date.__value);
+            Console.WriteLine("end date: {0}", project.end_date.__value);
+
+            Console.WriteLine("#target groups: {0}", project.target_groups.target_group.Count);
+            foreach (var @group in project.target_groups.target_group)
+            {
+                Console.WriteLine("\ttarget group: [id:{0}, name:{1}]", @group._id,
+                                  @group._name);
+                Console.WriteLine("\tcountry: [id:{0}, name:{1}]", @group.country._id, @group.country._name);
+                Console.WriteLine("\tstatus: {0}", @group.status.__value);
+                Console.WriteLine("\tstart date: {0}", @group.start_date.__value);
+                Console.WriteLine("\tend date: {0}", @group.end_date.__value);
+                Console.WriteLine("\tincidence: [actual:{0}, estimated: {1}]", @group.incidence_rate._actual,
+                                  @group.incidence_rate._estimated);
+                Console.WriteLine("\tloi: [actual:{0}, estimated: {1}]", @group.lenght_of_interview._actual,
+                                  @group.lenght_of_interview._estimated);
+                Console.WriteLine("\tgender: {0}", @group.gender.__value);
+                Console.WriteLine("\tcompletes: [wanted:{0},actual:{1}]", @group.completes._wanted,
+                                  @group.completes._actual);
+                Console.WriteLine("\tage-range: [min:{0},max:{1}]", @group.age_range._min, @group.age_range._max);
+
+                foreach (var panel in @group.panels.panel)
+                    Console.WriteLine("\tpanel name: {0}", panel._name);
+
+                if (((IDictionary<string, dynamic>)@group.regions).ContainsKey("region"))
+                {
+                    if (@group.regions.region is IList<dynamic>)
+                        foreach (var region in @group.regions.region)
+                            Console.WriteLine("\tregion name: {0}", region._name);
+                    else
+                        Console.WriteLine("\tregion name: {0}", @group.regions.region._name);
+                }
+                else
+                {
+                    Console.WriteLine("\tNo regions!");
+                }
+
+                if (((IDictionary<string, dynamic>)@group.questions).ContainsKey("question"))
+                {
+                    if (@group.regions.region is IList<dynamic>)
+                        foreach (var question in @group.questions.question)
+                        {
+                            Console.WriteLine("\tquestion name: {0}", question._name);
+                            foreach (var answer in question.answer)
+                            {
+                                Console.WriteLine("\t - answer: {0}", answer.__value);
+                            }
+                        }
+                    else
+                    {
+                        Console.WriteLine("\tquestion name: {0}", @group.questions.question._name);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("\tNo questions!");
+                }
+                Console.WriteLine("\t---------------------------------------------");
+            }
         }
 
         private static void PrintChina(dynamic project)
         {
-            foreach (var target_group in project.target_groups){
-                Console.WriteLine("Target Group: {0}", target_group.target_group_name);
-                foreach (var quota in target_group.quotas)
+            Console.WriteLine(" ------------- Print China ------------- ");
+            foreach (var @group in project.target_groups.target_group){
+                Console.WriteLine("Target Group: {0}", @group._name);
+
+                IDictionary<string, dynamic> quotas = @group.quotas;
+                if (quotas.ContainsKey("quota"))
                 {
-                    Console.WriteLine("\tquota: [gender: {0}, min: {1}, max: {2}]", quota.quota_gender, quota.quota_min, quota.quota_max);
-                    Console.WriteLine("\t - completes: [wanted: {0}, actual: {1}]", quota.completes_wanted, quota.completes_actual);
+                    if (@group.quotas.quota is IList<dynamic>)
+                        foreach (var quota in @group.quotas.quota)
+                        {
+                            Console.WriteLine("\tquota: [gender: {0}, min: {1}, max: {2}]", quota._gender, quota._min, quota._max);
+                            Console.WriteLine("\t - completes: [wanted: {0}, actual: {1}]", quota.completes._wanted, quota.completes._actual);
+                        }
+                    else
+                    {
+                        dynamic quota = @group.quotas.quota;
+                        Console.WriteLine("\tquota: [gender: {0}, min: {1}, max: {2}]", quota._gender, quota._min, quota._max);
+                        Console.WriteLine("\t - completes: [wanted: {0}, actual: {1}]", quota.completes._wanted, quota.completes._actual);
+                    }
                 }
-                foreach (var panel in target_group.panels)
-                    Console.WriteLine("\tpanel name: {0}", panel.panel_name);
-                foreach (var region in target_group.regions)
-                    Console.WriteLine("\tregion name: {0}", region.region_name);
-                
+                foreach (var panel in @group.panels.panel)
+                    Console.WriteLine("\tpanel name: {0}", panel._name);
+
+
+                IDictionary<string, dynamic> regions = @group.regions;
+                if (regions.ContainsKey("region"))
+                {
+                    if(@group.regions.region is IList<dynamic>)
+                        foreach (var region in @group.regions.region)
+                            Console.WriteLine("\tregion name: {0}", region._name);
+                    else
+                        Console.WriteLine("\tregion name: {0}", @group.regions.region._name);
+                        
+                    
+                }
                 Console.WriteLine("\t-------------------------");
             }
         }
 
         private static void PrintFeasibilityResponseBatch(dynamic batch)
         {
-            foreach (var response in batch)
+            foreach (var response in batch.feasibility_response)
             {
                 Console.WriteLine("Request id: {0}, Count: {1}, Average ResponseRate: {2}", response._request_id, response._count, response._average_response_rate);
-                foreach (var panel in response.panels)
+                foreach (var panel in response.panels.panel_result)
                 {
                     Console.WriteLine("id: {0}, count: {1}, average response rate: {2}", panel._id, panel._count, panel._average_response_rate);
                 }
@@ -51,67 +164,7 @@ namespace DynXml
             }
         }
 
-        private static void PrintQuestions(dynamic project)
-        {
-            foreach (var target_group in project.target_groups)
-                foreach (var question in target_group.questions)
-                {
-                    Console.WriteLine("\tquestion name: {0}", question.question_name);
-                    foreach (var answer in question.answer)
-                    {
-                        Console.WriteLine("\t - answer: {0}", answer.answer_label);
-                    }
-                }
-        }
-
-        private static void Print3TargetGroups(dynamic project)
-        {
-            Console.WriteLine("name: {0}", project.project_name);
-            Console.WriteLine("user: {0}", project.user_id);
-            Console.WriteLine("contact[email]: {0}", project.contact_email);
-            Console.WriteLine("contact[phone]: {0}", project.contact_phone);
-            Console.WriteLine("completes[actual]: {0}", project.completes_actual);
-            Console.WriteLine("completes[wanted]: {0}", project.completes_wanted);
-            Console.WriteLine("price[price]: [min:{0},max:{1}]", project.price.price_min, project.price.price_max);
-            Console.WriteLine("price[discount]: [min:{0},max:{1}]", project.price.discount_min, project.price.discount_max);
-            Console.WriteLine("price[agreed]: [min:{0},max:{1}]", project.price.agreed_min, project.price.agreed_max);
-            Console.WriteLine("status: {0}", project.status);
-            Console.WriteLine("start date: {0}", project.start_date);
-            Console.WriteLine("end date: {0}", project.end_date);
-            Console.WriteLine("#target groups: {0}", project.target_groups.Count);
-            foreach (var target_group in project.target_groups)
-            {
-                Console.WriteLine("\ttarget group: [id:{0}, name:{1}]", target_group.target_group_id,
-                                  target_group.target_group_name);
-                Console.WriteLine("\tcountry: [id:{0}, name:{1}]", target_group.country_id, target_group.country_name);
-                Console.WriteLine("\tstatus: {0}", target_group.status);
-                Console.WriteLine("\tstart date: {0}", target_group.start_date);
-                Console.WriteLine("\tend date: {0}", target_group.end_date);
-                Console.WriteLine("\tincidence: [actual:{0}, estimated: {1}]", target_group.incidence_rate_actual,
-                                  target_group.incidence_rate_estimated);
-                Console.WriteLine("\tloi: [actual:{0}, estimated: {1}]", target_group.lenght_of_interview_actual,
-                                  target_group.lenght_of_interview_estimated);
-                Console.WriteLine("\tgender: {0}", target_group.gender);
-                Console.WriteLine("\tcompletes: [wanted:{0},actual:{1}]", target_group.completes_wanted,
-                                  target_group.completes_actual);
-                Console.WriteLine("\tage-range: [min:{0},max:{1}]", target_group.age_range_min, target_group.age_range_max);
-
-                foreach (var panel in target_group.panels)
-                    Console.WriteLine("\tpanel name: {0}", panel.panel_name);
-                foreach (var region in target_group.regions)
-                    Console.WriteLine("\tregion name: {0}", region.region_name);
-                foreach (var question in target_group.questions)
-                {
-                    Console.WriteLine("\tquestion name: {0}", question.question_name);
-                    //Console.WriteLine("\t#answer count: {0}", question.answer.Count);
-                    foreach (var answer in question.answer)
-                    {
-                        Console.WriteLine("\t - answer: {0}", answer);
-                    }
-                }
-                Console.WriteLine("\t---------------------------------------------");
-            }
-        }
+        
     }
 }
 

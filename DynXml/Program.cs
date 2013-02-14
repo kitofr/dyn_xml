@@ -14,8 +14,7 @@ namespace DynXml
 
             PrintChina(Dynamic.Convert.FromXml(XDocument.Load("./examples/china.xml").Root));
 
-            //PrintFeasibilityResponseBatch(Dynamic.Convert.FromXml(XDocument.Load("./examples/feasibility-response-batch.xml").Root));
-            
+            PrintFeasibilityResponseBatch(Dynamic.Convert.FromXml(XDocument.Load("./examples/feasibility-response-batch.xml").Root));
             
             Console.ReadKey();
         }
@@ -153,6 +152,7 @@ namespace DynXml
 
         private static void PrintFeasibilityResponseBatch(dynamic batch)
         {
+            Console.WriteLine(" ------------- Print Feasibility Response Batch ------------- ");
             foreach (var response in batch.feasibility_response)
             {
                 Console.WriteLine("Request id: {0}, Count: {1}, Average ResponseRate: {2}", response._request_id, response._count, response._average_response_rate);

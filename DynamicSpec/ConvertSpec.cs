@@ -3,10 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Cone;
-using Dynamic;
+using Convert = Dynamic.Convert;
 
 namespace DynamicSpec
 {
+
     [Describe(typeof(Convert))]
     public class ConvertSpec
     {
@@ -15,11 +16,11 @@ namespace DynamicSpec
         {
             public void with_one_element()
             {
-                var foo = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
+                dynamic foo = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
 <foo>
-    <bar>1</bar>
+    <bar id='42'>1</bar>
 </foo>");
-                string bar = foo.bar;
+                string bar = foo.bar.__value;
                 Verify.That(() => bar == "1");
             }
 
@@ -30,10 +31,10 @@ namespace DynamicSpec
     <bar>1</bar>
     <baz>2</baz>
 </foo>");
-                string bar = foo.bar;
+                string bar = foo.bar.__value;
                 Verify.That(() => bar == "1");
 
-                string baz = foo.baz;
+                string baz = foo.baz.__value;
                 Verify.That(() => baz == "2");
             }
 
@@ -46,7 +47,9 @@ namespace DynamicSpec
 </foo>");
                 var bars = (IList<dynamic>)foo.bar;
                 Verify.That(() => bars.Count == 2);
-                Verify.That(() => string.Join(",", bars.Select(x => x)) == "1,2");
+                var values = new List<string>();
+                foreach (var bar in bars) { values.Add(bar.__value);}
+                Verify.That(() => string.Join(",", values) == "1,2");
             }
 
             public void that_is_3_levels_deep()
@@ -57,7 +60,7 @@ namespace DynamicSpec
         <baz>Yes</baz>
     </bar>
 </foo>");
-                string baz = foo.bar.baz;
+                string baz = foo.bar.baz.__value;
                 Verify.That(() => baz == "Yes");
             }
 
@@ -75,8 +78,10 @@ namespace DynamicSpec
                 var bars = (IList<dynamic>)foo.bar;
                 Verify.That(() => bars.Count == 2);
 
-                var res = string.Join(",", bars.Select(x => x.baz));
-                Verify.That(() => res == "Yes,No");
+                var values = new List<string>();
+                foreach (var bar in bars) { values.Add(bar.baz.__value); }
+
+                Verify.That(() => string.Join(",", values) == "Yes,No");
             }
             public void with_two_elements_with_same_name_and_one_with_a_different()
             {
@@ -88,8 +93,10 @@ namespace DynamicSpec
 </foo>");
                 var bars = (IList<dynamic>)foo.bar;
                 Verify.That(() => bars.Count == 2);
-                Verify.That(() => string.Join(",", bars.Select(x => x)) == "1,2");
-                string baz = foo.baz;
+                var values = new List<string>();
+                foreach (var bar in bars) { values.Add(bar.__value); }
+                Verify.That(() => string.Join(",", values) == "1,2");
+                string baz = foo.baz.__value;
                 Verify.That(() => baz == "No Wai!");
             }
         }
@@ -170,7 +177,7 @@ namespace DynamicSpec
     </bar-case>
 </foo-snake>");
 
-                string baz_thing = foo_snake.bar_case.baz_thing;
+                string baz_thing = foo_snake.bar_case.baz_thing.__value;
                 Verify.That(() => baz_thing == "Yes");
             }
         }

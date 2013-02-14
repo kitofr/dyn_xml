@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Dynamic
@@ -12,30 +14,21 @@ namespace Dynamic
             return AttachAttributes(root, Expand(root));
         }
 
-        private static dynamic CreateAttribute(XElement root, dynamic result)
-        {
-            var r = result as IDictionary<string, dynamic>;
-
-            foreach (var attribute in root.Attributes())
-            {
-                var casedName = '_' + snakeCase(attribute.Name.LocalName);
-                r[casedName] = attribute.Value;
-            }
-            return r;
-        }
-
         private static dynamic Expand(XElement root)
         {
-            return root.Elements().Any() ? 
-                Expand(root.Elements()) : 
-                GetAttributes(root);
+            dynamic element = new ExpandoObject();
+
+            element.__value = root.Value;
+
+            if (root.Elements().Any())
+                Expand(root.Elements(), element);
+            return CreateAttribute(root, element);
         }
 
-        private static dynamic Expand(IEnumerable<XElement> seq)
+        private static void Expand(IEnumerable<XElement> seq, dynamic self)
         {
-            dynamic result = new ExpandoObject();
-            var r = result as IDictionary<string, dynamic>;
-            
+            IDictionary<string, dynamic> r = self;
+           
             if (HasMoreThanOneChild(seq) && AllChildrenHasSameName(seq))
             {
                 var key = CreateSequenceName(seq);
@@ -59,8 +52,6 @@ namespace Dynamic
                     var key = snakeCase(element.Name.LocalName);
                     r[key] = Expand(element);
                 }
-
-            return r;
         }
 
         private static string CreateSequenceName(IEnumerable<XElement> seq)
@@ -93,6 +84,17 @@ namespace Dynamic
             return !root.HasAttributes ? root.Value : CreateAttribute(root, new ExpandoObject());
         }
 
+        private static dynamic CreateAttribute(XElement root, dynamic result)
+        {
+            var r = result as IDictionary<string, dynamic>;
+
+            foreach (var attribute in root.Attributes())
+            {
+                var casedName = '_' + snakeCase(attribute.Name.LocalName);
+                r[casedName] = attribute.Value;
+            }
+            return r;
+        }
         private static string snakeCase(string element)
         {
             return element.Replace('-', '_');

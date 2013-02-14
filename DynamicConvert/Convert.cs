@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace Dynamic
@@ -77,11 +75,6 @@ namespace Dynamic
         private static dynamic AttachAttributes(XElement root, dynamic result)
         {
             return !root.HasAttributes ? result : CreateAttribute(root, result);
-        }
-
-        private static dynamic GetAttributes(XElement root)
-        {
-            return !root.HasAttributes ? root.Value : CreateAttribute(root, new ExpandoObject());
         }
 
         private static dynamic CreateAttribute(XElement root, dynamic result)

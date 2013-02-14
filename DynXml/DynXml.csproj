@@ -55,6 +55,7 @@
     </Content>
     <Content Include="examples\feasibility-response-batch.xml">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="examples\questions.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

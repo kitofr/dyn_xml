@@ -124,6 +124,8 @@ namespace DynamicSpec
     <bar id='1'/>
     <bar id='2'/>
 </foo>");
+                string id = foo._id;
+                Verify.That(() => id == "foo");
 
                 var bars = ((IList<dynamic>)foo.bar);
                 Verify.That(() => bars.Count == 2);
@@ -131,6 +133,29 @@ namespace DynamicSpec
                 var ids = bars.Select(x => x._id);
                 Verify.That(() => string.Join(",", ids) == "1,2");
             }
+
+
+            public void nesting_3_levels_deep_with_attributes()
+            {
+                var foo = GetDynamic(@"<?xml version='1.0' encoding='utf-8'?>
+<foo id='foo'>
+    <bar id='1'>
+        <baz id='2' />
+    </bar>
+    <bar id='2'>
+        <baz id='3' />
+    </bar>
+</foo>");
+                string id = foo._id;
+                Verify.That(() => id == "foo");
+
+                var bars = ((IList<dynamic>)foo.bar);
+                Verify.That(() => bars.Count == 2);
+
+                var ids = bars.Select(x => x._id);
+                Verify.That(() => string.Join(",", ids) == "1,2");
+            }
+
         }
 
         [Context("Snake casing")]

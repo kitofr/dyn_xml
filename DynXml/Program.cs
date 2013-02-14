@@ -7,14 +7,16 @@ namespace DynXml
     {
         static void Main()
         {
-            var doc = XDocument.Load("./examples/3-target-groups.xml");
+            //var doc = XDocument.Load("./examples/3-target-groups.xml");
             //var doc = XDocument.Load("./examples/china.xml");
             //var doc = XDocument.Load("./examples/questions.xml");
-            var project = Dynamic.Convert.FromXml(doc.Root);
+            var doc = XDocument.Load("./examples/feasibility-response-batch.xml");
+            var batch = Dynamic.Convert.FromXml(doc.Root);
 
             //PrintQuestions(project);
             //PrintChina(project);
-            Print3TargetGroups(project);
+            //Print3TargetGroups(project);
+            PrintFeasibilityResponseBatch(batch);
             Console.ReadKey();
         }
 
@@ -38,7 +40,15 @@ namespace DynXml
 
         private static void PrintFeasibilityResponseBatch(dynamic batch)
         {
-            
+            foreach (var response in batch)
+            {
+                Console.WriteLine("Request id: {0}, Count: {1}, Average ResponseRate: {2}", response._request_id, response._count, response._average_response_rate);
+                foreach (var panel in response.panels)
+                {
+                    Console.WriteLine("id: {0}, count: {1}, average response rate: {2}", panel._id, panel._count, panel._average_response_rate);
+                }
+                Console.WriteLine("\t------------------------------------");
+            }
         }
 
         private static void PrintQuestions(dynamic project)
